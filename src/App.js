@@ -1,5 +1,5 @@
 import './App.css';
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import app from './firebase.init'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form'
@@ -8,9 +8,10 @@ import { useState } from 'react';
 const auth = getAuth(app)
 function App() {
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [registered, setRegistered] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
   const handleEmailBlur = (event) => {
     setEmail(event.target.value)
   }
@@ -20,13 +21,15 @@ function App() {
   const handlePasswordBlur = (event) => {
     setPassword(event.target.value)
   }
+  const handleNameBlur = (event) => {
+    setPassword(event.target.value)
+  }
   const handleFormSubmit = (event) => {
     if (registered) {
       signInWithEmailAndPassword(auth, email, password)
         .then((result) => {
           const user = result.user;
           console.log(user)
-          verifyEmil()
         })
         .catch((error) => {
           console.error(error)
@@ -40,6 +43,8 @@ function App() {
           console.log(user)
           setEmail('')
           setPassword('')
+          verifyEmil()
+          setUserName()
         })
         .catch((error) => {
           console.error(error)
@@ -55,6 +60,17 @@ function App() {
         console.log('I love You oyshe')
       })
   }
+  const setUserName = () => {
+    updateProfile(auth.currentUser, {
+      displayName: name
+    })
+      .then(() => {
+
+      })
+      .catch(error => {
+        setError(error.message)
+      })
+  }
   const verifyEmil = () => {
     sendEmailVerification(auth.currentUser)
       .then(() => {
@@ -66,6 +82,11 @@ function App() {
       <div className="registration w-50 mx-auto mt-2">
         <h2 className='text-primary'>Please {registered ? 'Login' : 'Register'}</h2>
         <Form onSubmit={handleFormSubmit}>
+          {!registered && <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Label>Your Name</Form.Label>
+            <Form.Control onBlur={handleNameBlur} type="text" placeholder="Enter your name" required />
+          </Form.Group>}
+
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Label>Email address</Form.Label>
             <Form.Control onBlur={handleEmailBlur} type="email" placeholder="Enter email" required />
